@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forgecycle Calendar — Anvil Year Converter</title>
+  <style>
+    :root {
+      --bg: #1a1410;
+      --panel: #2a211c;
+      --border: #5c4033;
+      --metal: #c9a66b;
+      --ember: #e07a3d;
+      --text: #e8d9c0;
+      --muted: #a89070;
+      --accent: #d4a017;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, #3a2a1f 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, #2a1a10 0%, transparent 50%);
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 2.1rem;
+      color: var(--metal);
+      letter-spacing: 0.04em;
+      text-shadow: 0 0 20px rgba(201, 166, 107, 0.3);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 0.4rem;
+      font-size: 1.05rem;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      color: var(--ember);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+
+    input, select, button {
+      font: inherit;
+      padding: 0.55rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #1f1814;
+      color: var(--text);
+      width: 100%;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--metal);
+      box-shadow: 0 0 0 2px rgba(201, 166, 107, 0.25);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .row { grid-template-columns: 1fr; }
+    }
+
+    button {
+      background: linear-gradient(180deg, #8b5a2b, #5c3a1e);
+      border-color: #a07040;
+      color: #f5e6c8;
+      cursor: pointer;
+      font-weight: 600;
+      transition: filter 0.15s, transform 0.1s;
+    }
+
+    button:hover {
+      filter: brightness(1.15);
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .result {
+      background: #1f1814;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.1rem 1.25rem;
+      margin-top: 1rem;
+      font-size: 1.15rem;
+      min-height: 3.2rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .result strong {
+      color: var(--accent);
+    }
+
+    .slag {
+      color: #9b8a6a;
+      font-style: italic;
+    }
+
+    .epoch-note {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    .heats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+    }
+
+    .heat-card {
+      background: #1f1814;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.55rem 0.7rem;
+      font-size: 0.9rem;
+    }
+
+    .heat-card span {
+      color: var(--ember);
+      font-weight: 600;
+    }
+
+    .week-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 0.6rem;
+    }
+
+    .week-day {
+      background: #1f1814;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 0.7rem;
+      font-size: 0.9rem;
+    }
+
+    .week-day b {
+      color: var(--metal);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .current-box {
+      text-align: center;
+      font-size: 1.35rem;
+      padding: 1.25rem;
+      background: linear-gradient(135deg, #2a1f18, #1f1814);
+      border: 1px solid var(--metal);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>The Forgecycle Calendar</h1>
+      <p class="subtitle">Anvil Year · Map any real date to the forge</p>
+    </header>
+
+    <!-- Current Date -->
+    <div class="panel current-box" id="currentDisplay">
+      Loading current forge date…
+    </div>
+
+    <!-- Epoch Setting -->
+    <div class="panel">
+      <h2>⚙ Epoch (Start of Forgeyear 1)</h2>
+      <div class="row">
+        <div>
+          <label for="epochInput">Gregorian date that begins Ore 1 of Forgeyear 1</label>
+          <input type="date" id="epochInput" value="2000-01-01" />
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button id="setEpochBtn">Set Epoch & Recalculate</button>
+        </div>
+      </div>
+      <p class="epoch-note">
+        Default epoch: 1 January 2000 = Ore 1, Forgeyear 1.<br>
+        A normal Forgeyear has 365 days (360 + 5 Slag Days).<br>
+        Every 4th Forgeyear is a Deep Forge Year with 366 days (360 + 6 Slag Days).
+      </p>
+    </div>
+
+    <!-- Gregorian → Forge -->
+    <div class="panel">
+      <h2>🔥 Gregorian → Forgecycle</h2>
+      <div class="row">
+        <div>
+          <label for="gregInput">Gregorian date</label>
+          <input type="date" id="gregInput" />
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button id="toForgeBtn">Convert to Forgecycle</button>
+        </div>
+      </div>
+      <div class="result" id="forgeResult">Enter a date and convert</div>
+    </div>
+
+    <!-- Forge → Gregorian -->
+    <div class="panel">
+      <h2>⚒️ Forgecycle → Gregorian</h2>
+      <div class="row">
+        <div>
+          <label for="fyInput">Forgeyear</label>
+          <input type="number" id="fyInput" value="27" min="1" />
+        </div>
+        <div>
+          <label for="heatInput">Heat</label>
+          <select id="heatInput">
+            <option value="0">1. Ore</option>
+            <option value="1">2. Bloom</option>
+            <option value="2">3. Spark</option>
+            <option value="3">4. Scale</option>
+            <option value="4">5. Strike</option>
+            <option value="5">6. Draw</option>
+            <option value="6">7. Quench</option>
+            <option value="7">8. Temper</option>
+            <option value="8">9. Anneal</option>
+            <option value="9">10. Grind</option>
+            <option value="10">11. Polish</option>
+            <option value="11">12. Mark</option>
+            <option value="12">Slag Days</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="dayInput">Day within Heat (1–30) or within Slag (1–5/6)</label>
+          <input type="number" id="dayInput" value="1" min="1" max="30" />
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button id="toGregBtn">Convert to Gregorian</button>
+        </div>
+      </div>
+      <div class="result" id="gregResult">Enter Forgecycle values and convert</div>
+    </div>
+
+    <!-- Reference -->
+    <div class="panel">
+      <h2>📜 The 12 Heats</h2>
+      <div class="heats-grid" id="heatsList"></div>
+    </div>
+
+    <div class="panel">
+      <h2>🗓️ The 6-Day Week</h2>
+      <div class="week-legend" id="weekList"></div>
+    </div>
+
+    <footer>
+      The Forgecycle Calendar · Nothing useful is made in a single heat
+    </footer>
+  </div>
+
+  <script>
+    const HEATS = [
+      "Ore", "Bloom", "Spark", "Scale", "Strike", "Draw",
+      "Quench", "Temper", "Anneal", "Grind", "Polish", "Mark"
+    ];
+
+    const WEEK = [
+      { name: "Anvil", letter: "A" },
+      { name: "Hammer", letter: "H" },
+      { name: "Tong", letter: "T" },
+      { name: "Bellows", letter: "B" },
+      { name: "Quench", letter: "Q" },
+      { name: "Rest", letter: "R" }
+    ];
+
+    // State
+    let epoch = new Date(2000, 0, 1); // 2000-01-01 local
+
+    // ---------- Helpers ----------
+    function isDeepForge(fy) {
+      return fy % 4 === 0;
+    }
+
+    function daysInForgeyear(fy) {
+      return isDeepForge(fy) ? 366 : 365;
+    }
+
+    function slagDays(fy) {
+      return isDeepForge(fy) ? 6 : 5;
+    }
+
+    // Total days from epoch to the start of a given Forgeyear
+    function daysBeforeForgeyear(fy) {
+      let total = 0;
+      for (let y = 1; y < fy; y++) {
+        total += daysInForgeyear(y);
+      }
+      return total;
+    }
+
+    // Convert a Gregorian Date to day offset from epoch (can be negative)
+    function gregToOffset(d) {
+      const utc1 = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+      const utc0 = Date.UTC(epoch.getFullYear(), epoch.getMonth(), epoch.getDate());
+      return Math.floor((utc1 - utc0) / 86400000);
+    }
+
+    // Convert day offset from epoch into Forgecycle components
+    function offsetToForge(offset) {
+      if (offset < 0) {
+        // Before epoch – simple fallback
+        return { error: "Date is before the chosen epoch" };
+      }
+
+      let remaining = offset;
+      let fy = 1;
+
+      while (true) {
+        const len = daysInForgeyear(fy);
+        if (remaining < len) break;
+        remaining -= len;
+        fy++;
+      }
+
+      // remaining is day-of-year 0-based (0 = Ore 1)
+      if (remaining < 360) {
+        const heatIndex = Math.floor(remaining / 30);
+        const dayInHeat = (remaining % 30) + 1;
+        const weekIndex = remaining % 6;
+        return {
+          fy,
+          heatIndex,
+          heatName: HEATS[heatIndex],
+          day: dayInHeat,
+          week: WEEK[weekIndex],
+          isSlag: false,
+          dayOfYear: remaining + 1
+        };
+      } else {
+        // Slag Days
+        const slagDay = remaining - 360 + 1;
+        const weekIndex = remaining % 6;
+        return {
+          fy,
+          heatIndex: 12,
+          heatName: "Slag",
+          day: slagDay,
+          week: WEEK[weekIndex],
+          isSlag: true,
+          dayOfYear: remaining + 1,
+          totalSlag: slagDays(fy)
+        };
+      }
+    }
+
+    // Convert Forgecycle → Gregorian Date
+    function forgeToGreg(fy, heatIndex, day) {
+      if (fy < 1) return null;
+
+      let offset = daysBeforeForgeyear(fy);
+
+      if (heatIndex === 12) {
+        // Slag
+        const maxSlag = slagDays(fy);
+        if (day < 1 || day > maxSlag) return null;
+        offset += 360 + (day - 1);
+      } else {
+        if (day < 1 || day > 30) return null;
+        offset += heatIndex * 30 + (day - 1);
+      }
+
+      const result = new Date(epoch);
+      result.setDate(result.getDate() + offset);
+      return result;
+    }
+
+    function formatGreg(d) {
+      return d.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    }
+
+    function formatForge(f) {
+      if (f.error) return `<span class="slag">${f.error}</span>`;
+
+      if (f.isSlag) {
+        return `
+          <strong>Forgeyear ${f.fy}</strong> · 
+          <span class="slag">Slag Day ${f.day} of ${f.totalSlag}</span> · 
+          ${f.week.name} (${f.week.letter})
+        `;
+      }
+
+      return `
+        <strong>Forgeyear ${f.fy}</strong> · 
+        ${f.heatName} ${f.day} · 
+        ${f.week.name} (${f.week.letter})
+      `;
+    }
+
+    // ---------- UI ----------
+    function updateCurrent() {
+      const today = new Date();
+      const f = offsetToForge(gregToOffset(today));
+      document.getElementById("currentDisplay").innerHTML =
+        `Today is ${formatForge(f)}<br><small style="color:var(--muted)">${formatGreg(today)}</small>`;
+    }
+
+    function convertToForge() {
+      const val = document.getElementById("gregInput").value;
+      if (!val) return;
+      const d = new Date(val + "T12:00:00"); // avoid timezone edge
+      const f = offsetToForge(gregToOffset(d));
+      document.getElementById("forgeResult").innerHTML = formatForge(f);
+    }
+
+    function convertToGreg() {
+      const fy = parseInt(document.getElementById("fyInput").value, 10);
+      const heat = parseInt(document.getElementById("heatInput").value, 10);
+      const day = parseInt(document.getElementById("dayInput").value, 10);
+
+      const d = forgeToGreg(fy, heat, day);
+      if (!d) {
+        document.getElementById("gregResult").innerHTML =
+          `<span class="slag">Invalid combination (check day range for Slag)</span>`;
+        return;
+      }
+      document.getElementById("gregResult").innerHTML =
+        `<strong>${formatGreg(d)}</strong>`;
+    }
+
+    function setEpoch() {
+      const val = document.getElementById("epochInput").value;
+      if (!val) return;
+      epoch = new Date(val + "T12:00:00");
+      updateCurrent();
+      convertToForge();
+      convertToGreg();
+    }
+
+    // Populate reference lists
+    function buildReferences() {
+      const heatsEl = document.getElementById("heatsList");
+      HEATS.forEach((name, i) => {
+        const div = document.createElement("div");
+        div.className = "heat-card";
+        div.innerHTML = `<span>${i + 1}.</span> ${name}`;
+        heatsEl.appendChild(div);
+      });
+
+      const weekEl = document.getElementById("weekList");
+      WEEK.forEach(w => {
+        const div = document.createElement("div");
+        div.className = "week-day";
+        div.innerHTML = `<b>${w.letter}</b> ${w.name}`;
+        weekEl.appendChild(div);
+      });
+    }
+
+    // Init
+    document.getElementById("setEpochBtn").addEventListener("click", setEpoch);
+    document.getElementById("toForgeBtn").addEventListener("click", convertToForge);
+    document.getElementById("toGregBtn").addEventListener("click", convertToGreg);
+
+    // Default today's date into the gregorian input
+    const todayStr = new Date().toISOString().slice(0, 10);
+    document.getElementById("gregInput").value = todayStr;
+
+    buildReferences();
+    updateCurrent();
+    convertToForge();
+  </script>
+</body>
+</html>
