@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forgecycle Calendar · Anvil Year 1</title>
+  <style>
+    :root {
+      --bg: #140f0c;
+      --panel: #221b16;
+      --border: #4a3728;
+      --metal: #c9a66b;
+      --ember: #e07a3d;
+      --text: #e8d9c0;
+      --muted: #9a8068;
+      --accent: #d4a017;
+      --slag: #7a6a55;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse at 15% 10%, #2e2218 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 90%, #1f1510 0%, transparent 50%);
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2rem 1.2rem 3.5rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 1.9rem;
+      color: var(--metal);
+      letter-spacing: 0.06em;
+      font-weight: 650;
+    }
+
+    .epoch {
+      margin-top: 0.45rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .epoch strong {
+      color: var(--ember);
+    }
+
+    /* Big current date */
+    .today {
+      background: linear-gradient(145deg, #2a2018, #1a1410);
+      border: 1px solid var(--metal);
+      border-radius: 12px;
+      padding: 1.6rem 1.4rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 40px rgba(201, 166, 107, 0.08);
+    }
+
+    .today .label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .today .forge-date {
+      font-size: 1.7rem;
+      font-weight: 650;
+      color: var(--accent);
+    }
+
+    .today .greg {
+      margin-top: 0.4rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* Heat grid */
+    .section-title {
+      font-size: 1.05rem;
+      color: var(--ember);
+      margin: 1.8rem 0 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .heats {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 0.65rem;
+    }
+
+    .heat {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 0.75rem;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+
+    .heat.current {
+      border-color: var(--metal);
+      background: #2c2219;
+      box-shadow: 0 0 0 1px rgba(201, 166, 107, 0.25);
+    }
+
+    .heat .num {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .heat .name {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 0.15rem;
+    }
+
+    /* Week */
+    .week {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+
+    .day {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.45rem 0.75rem;
+      font-size: 0.9rem;
+    }
+
+    .day b {
+      color: var(--metal);
+      margin-right: 0.25rem;
+    }
+
+    .day.current {
+      border-color: var(--ember);
+      background: #2e2218;
+    }
+
+    /* Year strip */
+    .year-strip {
+      display: grid;
+      grid-template-columns: repeat(13, 1fr);
+      gap: 3px;
+      margin-top: 0.8rem;
+      height: 28px;
+    }
+
+    .strip-cell {
+      background: #2a211c;
+      border-radius: 3px;
+      position: relative;
+    }
+
+    .strip-cell.slag {
+      background: #3a3228;
+    }
+
+    .strip-cell.now {
+      background: var(--ember);
+      box-shadow: 0 0 8px rgba(224, 122, 61, 0.5);
+    }
+
+    .strip-labels {
+      display: grid;
+      grid-template-columns: repeat(13, 1fr);
+      gap: 3px;
+      margin-top: 0.35rem;
+      font-size: 0.65rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Info box */
+    .info {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem 1.3rem;
+      margin-top: 1.8rem;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .info strong {
+      color: var(--text);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 2.8rem;
+      font-size: 0.82rem;
+      color: var(--slag);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>THE FORGECYCLE CALENDAR</h1>
+      <p class="epoch">
+        Epoch locked · <strong>31 October 2026</strong> = Ore 1 of Forgeyear 1
+      </p>
+    </header>
+
+    <div class="today" id="todayBox">
+      <div class="label">Current Forge Date</div>
+      <div class="forge-date" id="forgeDate">—</div>
+      <div class="greg" id="gregDate">—</div>
+    </div>
+
+    <div class="section-title">The 12 Heats of Forgeyear 1</div>
+    <div class="heats" id="heatsGrid"></div>
+
+    <div class="section-title" style="margin-top:1.8rem">The 6-Day Week</div>
+    <div class="week" id="weekRow"></div>
+
+    <div class="section-title">Forgeyear 1 at a glance</div>
+    <div class="year-strip" id="yearStrip"></div>
+    <div class="strip-labels" id="stripLabels"></div>
+
+    <div class="info">
+      <strong>How this year is built</strong><br>
+      12 Heats × 30 days = 360 days.<br>
+      Then come the <strong>Slag Days</strong> (5 in a normal year, 6 in a Deep Forge Year).<br>
+      Forgeyear 1 is a normal year → 365 days total.<br>
+      The next Deep Forge Year will be Forgeyear 4.
+    </div>
+
+    <footer>
+      Nothing useful is made in a single heat
+    </footer>
+  </div>
+
+  <script>
+    // ========== FIXED EPOCH ==========
+    // 31 October 2026 = Ore 1, Forgeyear 1
+    const EPOCH = new Date(2026, 9, 31); // month is 0-based → 9 = October
+
+    const HEATS = [
+      "Ore", "Bloom", "Spark", "Scale", "Strike", "Draw",
+      "Quench", "Temper", "Anneal", "Grind", "Polish", "Mark"
+    ];
+
+    const WEEK = [
+      { name: "Anvil", letter: "A" },
+      { name: "Hammer", letter: "H" },
+      { name: "Tong", letter: "T" },
+      { name: "Bellows", letter: "B" },
+      { name: "Quench", letter: "Q" },
+      { name: "Rest", letter: "R" }
+    ];
+
+    function isDeepForge(fy) {
+      return fy % 4 === 0;
+    }
+
+    function daysInForgeyear(fy) {
+      return isDeepForge(fy) ? 366 : 365;
+    }
+
+    function slagCount(fy) {
+      return isDeepForge(fy) ? 6 : 5;
+    }
+
+    // Days from epoch to a given Gregorian date (can be negative)
+    function offsetFromEpoch(d) {
+      const a = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+      const b = Date.UTC(EPOCH.getFullYear(), EPOCH.getMonth(), EPOCH.getDate());
+      return Math.floor((a - b) / 86400000);
+    }
+
+    function offsetToForge(offset) {
+      if (offset < 0) {
+        return { before: true, offset };
+      }
+
+      let remaining = offset;
+      let fy = 1;
+
+      while (true) {
+        const len = daysInForgeyear(fy);
+        if (remaining < len) break;
+        remaining -= len;
+        fy++;
+      }
+
+      // remaining = 0-based day of this Forgeyear
+      if (remaining < 360) {
+        const heatIndex = Math.floor(remaining / 30);
+        const dayInHeat = (remaining % 30) + 1;
+        const weekIndex = remaining % 6;
+        return {
+          fy,
+          heatIndex,
+          heatName: HEATS[heatIndex],
+          day: dayInHeat,
+          week: WEEK[weekIndex],
+          isSlag: false,
+          dayOfYear: remaining + 1
+        };
+      } else {
+        const slagDay = remaining - 360 + 1;
+        const weekIndex = remaining % 6;
+        return {
+          fy,
+          heatIndex: 12,
+          heatName: "Slag",
+          day: slagDay,
+          week: WEEK[weekIndex],
+          isSlag: true,
+          dayOfYear: remaining + 1,
+          totalSlag: slagCount(fy)
+        };
+      }
+    }
+
+    function formatForge(f) {
+      if (f.before) {
+        return `Before the Epoch (${Math.abs(f.offset)} day${Math.abs(f.offset) === 1 ? "" : "s"} prior)`;
+      }
+      if (f.isSlag) {
+        return `Forgeyear ${f.fy} · Slag Day ${f.day} of ${f.totalSlag} · ${f.week.name} (${f.week.letter})`;
+      }
+      return `Forgeyear ${f.fy} · ${f.heatName} ${f.day} · ${f.week.name} (${f.week.letter})`;
+    }
+
+    // ----- Render -----
+    const today = new Date();
+    const f = offsetToForge(offsetFromEpoch(today));
+
+    // Today box
+    document.getElementById("forgeDate").textContent = formatForge(f);
+    document.getElementById("gregDate").textContent = today.toLocaleDateString("en-US", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric"
+    });
+
+    // Heats grid
+    const heatsGrid = document.getElementById("heatsGrid");
+    HEATS.forEach((name, i) => {
+      const div = document.createElement("div");
+      div.className = "heat" + (!f.before && !f.isSlag && f.heatIndex === i ? " current" : "");
+      div.innerHTML = `<div class="num">${i + 1}</div><div class="name">${name}</div>`;
+      heatsGrid.appendChild(div);
+    });
+
+    // Week
+    const weekRow = document.getElementById("weekRow");
+    WEEK.forEach((w, i) => {
+      const div = document.createElement("div");
+      const isCurrent = !f.before && f.week.letter === w.letter;
+      div.className = "day" + (isCurrent ? " current" : "");
+      div.innerHTML = `<b>${w.letter}</b>${w.name}`;
+      weekRow.appendChild(div);
+    });
+
+    // Year strip (13 segments: 12 heats + slag)
+    const strip = document.getElementById("yearStrip");
+    const labels = document.getElementById("stripLabels");
+
+    for (let i = 0; i < 13; i++) {
+      const cell = document.createElement("div");
+      cell.className = "strip-cell" + (i === 12 ? " slag" : "");
+
+      // Highlight current position roughly
+      if (!f.before && f.fy === 1) {
+        if (f.isSlag && i === 12) cell.classList.add("now");
+        else if (!f.isSlag && f.heatIndex === i) cell.classList.add("now");
+      }
+      strip.appendChild(cell);
+
+      const lab = document.createElement("div");
+      lab.textContent = i < 12 ? HEATS[i].slice(0, 3) : "Slag";
+      labels.appendChild(lab);
+    }
+  </script>
+</body>
+</html>
